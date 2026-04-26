@@ -6,13 +6,31 @@ import { Label } from '@/components/ui/label';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { toast } from 'sonner';
 
+const ALCOHOL_OPTIONS = [
+  { value: 'white-wine', label: 'Белое вино', icon: 'Wine' },
+  { value: 'red-wine', label: 'Красное вино', icon: 'Wine' },
+  { value: 'champagne', label: 'Шампанское', icon: 'GlassWater' },
+  { value: 'vodka', label: 'Водка', icon: 'Martini' },
+  { value: 'moonshine', label: 'Самогон', icon: 'FlaskConical' },
+];
+
 const Index = () => {
   const [formData, setFormData] = useState({
     name: '',
     attendance: '',
     guests: '1',
     wishes: '',
+    alcohol: [] as string[],
   });
+
+  const toggleAlcohol = (value: string) => {
+    setFormData((prev) => ({
+      ...prev,
+      alcohol: prev.alcohol.includes(value)
+        ? prev.alcohol.filter((v) => v !== value)
+        : [...prev.alcohol, value],
+    }));
+  };
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -21,7 +39,7 @@ const Index = () => {
       return;
     }
     toast.success('Спасибо! Ваш ответ получен');
-    setFormData({ name: '', attendance: '', guests: '1', wishes: '' });
+    setFormData({ name: '', attendance: '', guests: '1', wishes: '', alcohol: [] });
   };
 
   const timeline = [
@@ -324,9 +342,9 @@ const Index = () => {
         <div className="max-w-2xl mx-auto">
           <div className="text-center mb-12">
             <p className="font-sans-clean uppercase tracking-[0.5em] text-xs text-gray-500 mb-4">
-              Подтверждение присутствия
+              RSVP — Подтверждение присутствия
             </p>
-            <h2 className="font-script text-6xl md:text-7xl mb-4 text-black">Будете ли вы с нами?</h2>
+            <h2 className="font-script text-7xl md:text-8xl mb-4 text-black leading-tight">Будете ли вы с нами?</h2>
             <div className="h-px w-16 bg-black mx-auto mb-6" />
             <p className="font-serif-elegant text-lg text-gray-600 italic">
               Просим подтвердить присутствие до 1 июля 2026 года
@@ -389,6 +407,37 @@ const Index = () => {
                     <Label htmlFor="g2" className="font-serif-elegant text-lg cursor-pointer text-black">2</Label>
                   </div>
                 </RadioGroup>
+              </div>
+            )}
+
+            {formData.attendance === 'yes' && (
+              <div className="space-y-3 animate-fade-up">
+                <Label className="font-sans-clean uppercase tracking-[0.3em] text-xs text-gray-700">
+                  Предпочтения по алкоголю
+                </Label>
+                <p className="font-serif-elegant text-sm text-gray-500 italic">
+                  Можно выбрать несколько вариантов
+                </p>
+                <div className="grid grid-cols-2 md:grid-cols-3 gap-3 pt-2">
+                  {ALCOHOL_OPTIONS.map((opt) => {
+                    const selected = formData.alcohol.includes(opt.value);
+                    return (
+                      <button
+                        key={opt.value}
+                        type="button"
+                        onClick={() => toggleAlcohol(opt.value)}
+                        className={`border p-4 flex flex-col items-center gap-2 transition-all ${
+                          selected
+                            ? 'border-black bg-black text-white'
+                            : 'border-black/20 bg-white text-black hover:border-black/60'
+                        }`}
+                      >
+                        <Icon name={opt.icon as 'Wine'} size={24} />
+                        <span className="font-serif-elegant text-base">{opt.label}</span>
+                      </button>
+                    );
+                  })}
+                </div>
               </div>
             )}
 
