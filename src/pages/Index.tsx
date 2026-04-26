@@ -5,6 +5,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { toast } from 'sonner';
+import func2url from '../../backend/func2url.json';
 
 const ALCOHOL_OPTIONS = [
   { value: 'white-wine', label: 'Белое вино', icon: 'Wine' },
@@ -32,14 +33,29 @@ const Index = () => {
     }));
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const [submitting, setSubmitting] = useState(false);
+
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!formData.name || !formData.attendance) {
       toast.error('Пожалуйста, заполните имя и подтверждение');
       return;
     }
-    toast.success('Спасибо! Ваш ответ получен');
-    setFormData({ name: '', attendance: '', guests: '1', wishes: '', alcohol: [] });
+    setSubmitting(true);
+    try {
+      const res = await fetch(func2url.rsvp, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(formData),
+      });
+      if (!res.ok) throw new Error('Ошибка отправки');
+      toast.success('Спасибо! Ваш ответ получен');
+      setFormData({ name: '', attendance: '', guests: '1', wishes: '', alcohol: [] });
+    } catch {
+      toast.error('Не удалось отправить. Попробуйте позже или свяжитесь с нами');
+    } finally {
+      setSubmitting(false);
+    }
   };
 
   const timeline = [
@@ -455,9 +471,10 @@ const Index = () => {
 
             <Button
               type="submit"
-              className="w-full bg-black text-white hover:bg-gray-800 rounded-none py-6 font-sans-clean uppercase tracking-[0.4em] text-xs"
+              disabled={submitting}
+              className="w-full bg-black text-white hover:bg-gray-800 rounded-none py-6 font-sans-clean uppercase tracking-[0.4em] text-xs disabled:opacity-60"
             >
-              Отправить
+              {submitting ? 'Отправляем...' : 'Отправить'}
             </Button>
           </form>
         </div>
